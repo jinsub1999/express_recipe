@@ -6,9 +6,9 @@
       class="flex flex-col flex-shrink-0 m-2 p-1"
     >
       <item-vue
-        :ItemID="item.id"
-        :ItemName="item.name"
-        :ItemPrice="item.price"
+        :ItemID="item.itemID"
+        :ItemName="item.itemName"
+        :ItemPrice="item.itemPrice"
       ></item-vue>
       <btn-vue btnColor="blue" btnName="Buy"></btn-vue>
     </div>
