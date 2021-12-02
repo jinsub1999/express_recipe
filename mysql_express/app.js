@@ -1,8 +1,11 @@
 var createError = require("http-errors");
 var express = require("express");
-require("dotenv").config({ path: ".env.local" });
+require("dotenv").config({ path: ".env" });
 var cors = require("cors");
 var path = require("path");
+var session = require("express-session");
+var MySQLStore = require("express-mysql-session")(session);
+
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
@@ -11,7 +14,10 @@ var usersRouter = require("./routes/users");
 var authRouter = require("./routes/auth");
 
 var app = express();
-var corsOption = { origin: "http://localhost:8080", credentials: true };
+var corsOption = {
+  origin: true,
+  credentials: true,
+};
 app.use(cors(corsOption));
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -22,6 +28,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+var options = {
+  host: `${process.env.DB_HOST}`,
+  user: `${process.env.DB_USER}`,
+  password: `${process.env.DB_PASS}`,
+  database: `${process.env.DB_NAME}`,
+  port: 3306,
+};
+var sessionStore = new MySQLStore(options);
+app.use(
+  session({
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: true,
+    // store: sessionStore,
+    cookie: { secure: false, maxAge: 24000 * 60 * 60, httpOnly: true },
+    unset: "destroy",
+  })
+);
+
+// session middleware
+app.use(function (req, res, next) {
+  res.set("credentials", "include");
+  res.set("Access-Control-Allow-Credentials", true);
+  res.set("Access-Control-Allow-Origin", req.headers.origin);
+  res.set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.set(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);

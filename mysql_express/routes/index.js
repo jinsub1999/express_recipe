@@ -4,20 +4,18 @@ var multer = require("multer");
 const upload = multer();
 var conn = require("./db");
 router.get("/", function (req, res, next) {
-  conn.query("select * from producttable;", function (err, rows, fields) {
-    if (err) throw err;
-  });
   res.render("index", { title: "MySQL" });
 });
 router.get("/getDBInfo", function (req, res, next) {
   conn.query("select * from producttable;", function (err, rows, fields) {
-    if (err) throw res.send(err);
-    res.header({ "content-type": "application/json" });
-    res.send(rows);
+    if (err) throw err;
+    if (rows !== undefined) {
+      res.header({ "content-type": "application/json" });
+      res.send(rows);
+    } else res.json({ success: true });
   });
 });
 router.post("/insertProductInfo", upload.none(), function (req, res, next) {
-  // console.log(req.headers);
   conn.query(
     `INSERT INTO producttable(itemName, itemPrice, itemGroup) 
     Value(?,?,?);`,
