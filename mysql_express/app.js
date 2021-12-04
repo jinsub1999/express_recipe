@@ -5,7 +5,7 @@ var cors = require("cors");
 var path = require("path");
 var session = require("express-session");
 var MySQLStore = require("express-mysql-session")(session);
-
+var mysql2 = require("mysql2/promise");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
@@ -35,13 +35,15 @@ var options = {
   database: `${process.env.DB_NAME}`,
   port: 3306,
 };
-var sessionStore = new MySQLStore(options);
+var poolConn = mysql2.createPool(options);
+// var sessionStore = new MySQLStore(options);
+var sessionStore = new MySQLStore({}, poolConn);
 app.use(
   session({
     secret: process.env.SESSION_KEY,
     resave: false,
     saveUninitialized: true,
-    // store: sessionStore,
+    store: sessionStore,
     cookie: { secure: false, maxAge: 24000 * 60 * 60, httpOnly: true },
     unset: "destroy",
   })
@@ -53,10 +55,7 @@ app.use(function (req, res, next) {
   res.set("Access-Control-Allow-Credentials", true);
   res.set("Access-Control-Allow-Origin", req.headers.origin);
   res.set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.set(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-  );
+  res.set("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept");
   next();
 });
 

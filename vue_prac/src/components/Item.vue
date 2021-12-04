@@ -21,7 +21,7 @@ export default {
       required: true,
     },
     ItemPrice: {
-      type: Number,
+      type: String,
       required: true,
     },
   },

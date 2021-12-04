@@ -1,14 +1,11 @@
 <template lang="pug">
 
-form(class="bg-gray-700 p-3 m-2 max-w-sm flex flex-col" @submit="postDB" enctype="multipart/form-data")
+form(class="bg-gray-700 p-3 m-2 max-w-sm flex flex-col rounded-lg" @submit="postDB" enctype="multipart/form-data")
     input(v-model="itemName" class="m-2")
     input(v-model="itemPrice" class="m-2")
     input(v-model="itemGroup" class="m-2")
     btn-vue(btnName="Press To Test" btnColor="red")
 
-div(class="max-w-lg bg-red-600") {{itemName}}
-div(class="max-w-lg border-green-400") {{itemPrice}}
-div(class="max-w-lg bg-indigo-600") {{itemGroup}}
 
 </template>
 
@@ -26,21 +23,6 @@ export default {
       itemName: "",
       itemPrice: 0,
       itemGroup: "",
-      //   itemName: {
-      //     type: String,
-      //     required: true,
-      //     default: "",
-      //   },
-      //   itemPrice: {
-      //     type: Number,
-      //     required: true,
-      //     default: 0,
-      //   },
-      //   itemGroup: {
-      //     type: String,
-      //     required: true,
-      //     default: "",
-      //   },
     };
   },
   methods: {

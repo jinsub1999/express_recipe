@@ -1,15 +1,7 @@
 <template>
   <div class="flex">
-    <div
-      v-for="item in ListofProduct"
-      :key="item.ItemID"
-      class="flex flex-col flex-shrink-0 m-2 p-1"
-    >
-      <item-vue
-        :ItemID="item.itemID"
-        :ItemName="item.itemName"
-        :ItemPrice="item.itemPrice"
-      ></item-vue>
+    <div v-for="item in ListofProduct" :key="item.ItemID" class="flex flex-col flex-shrink-0 m-2 p-1">
+      <item-vue :ItemID="item.itemID" :ItemName="item.itemName" :ItemPrice="item.itemPrice"></item-vue>
       <btn-vue btnColor="blue" btnName="Buy"></btn-vue>
     </div>
   </div>
@@ -31,7 +23,7 @@ export default {
     };
   },
   beforeMount: async function () {
-    const dbQuery = await axios.get("http://localhost:3010/getDBInfo");
+    const dbQuery = await axios.get("http://localhost:3010/getRecipe");
     this.ListofProduct = dbQuery.data;
   },
 };

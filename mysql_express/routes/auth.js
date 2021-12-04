@@ -10,39 +10,35 @@ router.post("/login", upload.none(), function (req, res, next) {
   const id = req.body.inputID;
   const pw = req.body.inputPW;
 
-  db.query(
-    "select id, pw from idpwtable where id = ?",
-    [id],
-    (err, result, fields) => {
-      if (err)
-        res.json({
-          success: false,
-          message: "login failed. not matched id",
-          errs: ["login error. try again."],
-        });
-      if (result[0] !== undefined && result[0].id === id) {
-        bcrypt.compare(pw, result[0].pw, function (err, valid) {
-          if (valid) {
-            req.session.userID = id;
-            req.session.isLogined = true;
-            res.json({ success: true, message: "login success." });
-          } else {
-            res.json({
-              success: false,
-              message: "login failed. not matched ID or password.",
-              errs: ["login failed. not matched ID or password."],
-            });
-          }
-        });
-      } else {
-        res.json({
-          success: false,
-          message: "error",
-          errs: ["login failed. not matched ID or password."],
-        });
-      }
+  db.query("select id, pw from users where id = ?", [id], (err, result, fields) => {
+    if (err)
+      res.json({
+        success: false,
+        message: "Login failed.",
+        errs: ["Login error. try again."],
+      });
+    if (result[0] !== undefined && result[0].id === id) {
+      bcrypt.compare(pw, result[0].pw, function (err, valid) {
+        if (valid) {
+          req.session.userID = id;
+          req.session.isLogined = true;
+          res.json({ success: true, message: "login success." });
+        } else {
+          res.json({
+            success: false,
+            message: "Login failed.",
+            errs: ["Login failed. not matched ID or password."],
+          });
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Error",
+        errs: ["Login failed. not matched ID or password."],
+      });
     }
-  );
+  });
 });
 
 router.post("/signup", upload.none(), function (req, res, next) {
@@ -54,15 +50,13 @@ router.post("/signup", upload.none(), function (req, res, next) {
   const pwRegEx = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
   if (!idRegEx.test(id)) {
     isErr = true;
-    errs.push("ID must be at least 4");
+    errs.push("ID must be at least 4.");
     errs.push("ID only contain alphabets and digits.");
   }
   if (!pwRegEx.test(pw)) {
     isErr = true;
     errs.push("Password must be at least 8");
-    errs.push(
-      "Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number"
-    );
+    errs.push("Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number.");
   }
   if (isErr) {
     res.json({
@@ -70,11 +64,12 @@ router.post("/signup", upload.none(), function (req, res, next) {
       message: "Signup failed.",
       errs: errs,
     });
-  } else
+  } else {
+    const currdate = new Date().toISOString().slice(0, 19).replace("T", " ");
     bcrypt.hash(pw, saltRounds, function (err, hashed) {
       db.query(
-        "insert into idpwtable(id, pw) value(?, ?);",
-        [id, hashed],
+        "insert into users(id, pw, signupDate) value(?, ?, ?);",
+        [id, hashed, currdate],
         (err, result, fields) => {
           if (err)
             res.json({
@@ -92,14 +87,21 @@ router.post("/signup", upload.none(), function (req, res, next) {
         }
       );
     });
+  }
 });
 
 router.get("/logout", function (req, res, next) {
   if (req.session.isLogined === true) {
     req.session.destroy();
-    res.send("OK!");
+    res.json({
+      success: true,
+      message: "Logout Success.",
+    });
   } else {
-    res.send("not logined.");
+    res.send({
+      success: false,
+      message: "Not Logined.",
+    });
   }
 });
 router.get("/userid", function (req, res, next) {

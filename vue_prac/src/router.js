@@ -10,6 +10,11 @@ const routes = [
     name: "loginPage",
     component: () => import("@/components/LoginPage"),
   },
+  {
+    path: "/signup",
+    name: "signupPage",
+    component: () => import("@/components/SignupPage"),
+  },
 ];
 
 const router = createRouter({

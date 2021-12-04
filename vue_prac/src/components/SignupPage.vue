@@ -1,16 +1,16 @@
 <template lang="pug">
-
 div(class="mywrapper")
   nav-vue
-  div(class="bg-red-100 p-3 rounded-md w-2/4 m-3 text-center flex flex-col items-center") Login
+  div(class="bg-red-100 p-3 rounded-md w-2/4 m-3 text-center flex flex-col items-center") Sign up
     div(class="bg-gray-500 w-3/4 p-2 m-2 max-w-md flex flex-col rounded-md") 
-      input(type="text" name="id" placeholder="ID" v-model="user_id" class="m-2 rounded-md px-2 py-1") 
-      input(type="password" name="pw" placeholder="PW" v-model="user_pw" class="m-2 rounded-md px-2 py-1")
-      button(@click="tryLogin" class="m-2 bg-purple-400 hover:bg-purple-500 rounded-md") 로그인
+      input(type="text" name="id" placeholder="ID" v-model="signup_id" class="m-2 rounded-md px-2 py-1") 
+      input(type="password" name="pw" placeholder="PW" v-model="signup_pw" class="m-2 rounded-md px-2 py-1")
+      button(@click="trySignup" class="m-2 bg-purple-400 hover:bg-purple-500 rounded-md") 회원가입
 
-    div(v-if="loginFailed" class="text-red-600 container bg-yellow-100 border-2 border-red-400 p-3 rounded-lg")
+
+    div(v-if="signupFailed" class="text-red-600 container bg-yellow-100 border-2 border-red-400 p-3 rounded-lg")
       ul(class="list-disc list-inside")
-        li(v-for="item in loginErr") {{item}}
+        li(v-for="item in signupErr") {{item}}
 
 </template>
 
@@ -25,19 +25,19 @@ export default {
   components: { NavVue },
   data: function () {
     return {
-      user_id: "",
-      user_pw: "",
-      loginFailed: false,
-      loginErr: [],
+      signup_id: "",
+      signup_pw: "",
+      signupFailed: false,
+      signupErr: [],
     };
   },
   methods: {
-    tryLogin: async function () {
+    trySignup: async function () {
       const fd = new FormData();
-      fd.set("inputID", this.user_id);
-      fd.set("inputPW", this.user_pw);
+      fd.set("inputID", this.signup_id);
+      fd.set("inputPW", this.signup_pw);
       const res = await axios({
-        url: "http://localhost:3010/auth/login",
+        url: "http://localhost:3010/auth/signup",
         method: "POST",
         data: fd,
         headers: {
@@ -46,12 +46,12 @@ export default {
         },
         withCredentials: true,
       });
-      this.loginFailed = !res.data.success;
+      this.signupFailed = !res.data.success;
       if (!res.data.success) {
-        this.loginFailed = true;
-        this.loginErr = res.data.errs;
+        this.signupFailed = true;
+        this.signupErr = res.data.errs;
       } else {
-        this.$router.push("/");
+        this.$router.push("/login");
       }
     },
     tryLogout: async function () {
