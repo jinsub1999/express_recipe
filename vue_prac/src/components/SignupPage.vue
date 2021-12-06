@@ -1,7 +1,7 @@
 <template lang="pug">
 div(class="mywrapper")
   nav-vue
-  div(class="bg-red-100 p-3 rounded-md w-2/4 m-3 text-center flex flex-col items-center") Sign up
+  div(class="bg-red-100 p-3 rounded-md w-2/4 m-3 text-center flex flex-col items-center") 회원가입
     div(class="bg-gray-500 w-3/4 p-2 m-2 max-w-md flex flex-col rounded-md") 
       input(type="text" name="id" placeholder="ID" v-model="signup_id" class="m-2 rounded-md px-2 py-1") 
       input(type="password" name="pw" placeholder="PW" v-model="signup_pw" class="m-2 rounded-md px-2 py-1")

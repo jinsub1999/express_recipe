@@ -15,6 +15,21 @@ const routes = [
     name: "signupPage",
     component: () => import("@/components/SignupPage"),
   },
+  {
+    path: "/userinfo",
+    name: "userinfo",
+    component: () => import("@/components/UserInfo"),
+  },
+  {
+    path: "/modify/:recipeID",
+    name: "recipeModify",
+    component: () => import("@/components/RecipeModify"),
+  },
+  {
+    path: "/recipe/:recipeID",
+    name: "recipeItem",
+    component: () => import("@/components/RecipeItem"),
+  },
 ];
 
 const router = createRouter({

@@ -4,6 +4,8 @@ var multer = require("multer");
 var db = require("./db");
 const upload = multer();
 var bcrypt = require("bcrypt");
+const conn = require("./db");
+const { getTimeAsString } = require("./mydate");
 const saltRounds = 10;
 
 router.post("/login", upload.none(), function (req, res, next) {
@@ -65,7 +67,7 @@ router.post("/signup", upload.none(), function (req, res, next) {
       errs: errs,
     });
   } else {
-    const currdate = new Date().toISOString().slice(0, 19).replace("T", " ");
+    const currdate = getTimeAsString();
     bcrypt.hash(pw, saltRounds, function (err, hashed) {
       db.query(
         "insert into users(id, pw, signupDate) value(?, ?, ?);",
@@ -117,4 +119,36 @@ router.get("/userid", function (req, res, next) {
       userID: req.session.userID,
     });
 });
+
+router.get("/userinfo", function (req, res, next) {
+  var session = req.session;
+  if (session.userID === undefined)
+    res.json({
+      success: false,
+      message: "not logined.",
+      errs: ["not logined."],
+    });
+  else {
+    conn.query(
+      `select * from upvotes LEFT JOIN (SELECT id, name, author from recipes) recNames
+       on id = upvotes.recipeid 
+       where userID = ? 
+       order by upvoteDate desc;`,
+      [session.userID],
+      function (err, result, fields) {
+        if (err) res.json({ errs: err });
+        else {
+          res.json({
+            success: true,
+            userInfo: {
+              userID: req.session.userID,
+              upvoteLog: result,
+            },
+          });
+        }
+      }
+    );
+  }
+});
+
 module.exports = router;

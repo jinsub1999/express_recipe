@@ -1,13 +1,17 @@
 <template lang="pug">
 div(class="max-w-7xl mx-2 px-2 sm:px-6 lg:px-8 bg-gray-600 rounded-br-xl rounded-bl-xl w-10/12")
     div(class="flex items-center justify-between h-20 bg-indigo-300 pl-3 pr-2")
-        router-link(to="/" class="bg-indigo-600 text-green-200 p-3 rounded-md m-1") Main Page
+      div
+        router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 홈페이지
+        router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 조회
+        router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 추가
+      div
         div
-          router-link(v-if="!logined" to="/login" class="bg-indigo-600 text-green-200 p-3 rounded-md m-1") Login
-          router-link(v-if="!logined" to="/signup" class="bg-indigo-600 text-green-200 p-3 rounded-md m-1") Signup
-        button(@click="tryLogout" v-if="logined" class="bg-indigo-600 text-green-200 p-3 rounded-md m-1") Logout
-    div(v-if="logined" class="p-2 bg-purple-300 text-blue-800")
-      div {{userID}}
+          router-link(v-if="!logined" to="/login" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 로그인
+          router-link(v-if="!logined" to="/signup" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 회원가입
+        div
+          router-link(v-if="logined" to="/userinfo" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") {{userID}}
+          button(@click="tryLogout" v-if="logined" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 로그아웃
 </template>
 
 <script>

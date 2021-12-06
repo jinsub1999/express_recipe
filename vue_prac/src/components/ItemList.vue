@@ -23,7 +23,7 @@ export default {
     };
   },
   beforeMount: async function () {
-    const dbQuery = await axios.get("http://localhost:3010/getRecipe");
+    const dbQuery = await axios.get("http://localhost:3010/recipe");
     this.ListofProduct = dbQuery.data;
   },
 };
