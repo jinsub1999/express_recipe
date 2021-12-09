@@ -28,7 +28,7 @@ export default {
   methods: {
     tryLogout: async function () {
       await axios({
-        url: "http://localhost:3010/auth/logout",
+        url: "http://localhost:3000/auth/logout",
         method: "GET",
         headers: {
           charset: "utf-8",
@@ -41,7 +41,7 @@ export default {
   beforeMount: async function () {
     document.body.classList.add("bgcolor");
     const res = await axios({
-      url: "http://localhost:3010/auth/userid",
+      url: "http://localhost:3000/auth/userid",
       method: "GET",
       headers: {
         charset: "utf-8",

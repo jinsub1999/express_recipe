@@ -8,7 +8,7 @@ div(class="bg-gray-700 p-3 m-2 max-w-md flex flex-col rounded-lg")
   label(for="r_ingred" class="block p-1 m-2 bg-yellow-300 rounded-md") 필요한 재료를 적어주세요
   input(v-model="recipeIngred_input" name="r_ingred" class="m-2 p-2 rounded-md")
   div(class="flex overflow-x-auto")
-    div(v-for="(ingred, indx) in recipeIngred" class="flex flex-shrink-0 justify-center items-center m-2 pl-2 bg-gray-600 rounded-md") {{ingred.name}}
+    div(v-for="(ingred, indx) in recipeIngred" class="flex flex-shrink-0 justify-center items-center m-2 pl-2 bg-green-600 rounded-md") {{ingred.ingredName}}
       button(@click="removeIngred(indx)" class="m-2 px-2 rounded-md bg-red-300 hover:bg-red-500") X
   button(name="r_ingred" @click="addIngred" class="hover:bg-blue-600 bg-blue-400 m-2 rounded-md") 재료추가
 
@@ -46,9 +46,11 @@ export default {
       const fd = new FormData();
       fd.set("recipeName", this.recipeName);
       fd.set("recipeBody", this.recipeBody);
+      fd.set("recipeIngred", JSON.stringify(this.recipeIngred));
+      console.log(this.recipeIngred);
       const res = await axios({
         method: "POST",
-        url: "http://localhost:3010/recipe",
+        url: "http://localhost:3000/recipe",
         headers: {
           "Content-Type": "multipart/form-data",
           charset: "utf-8",
@@ -59,7 +61,7 @@ export default {
       this.uploadErrs = res.data.errs;
     },
     addIngred: function () {
-      this.recipeIngred.push({ name: `${this.recipeIngred_input}` });
+      this.recipeIngred.push({ ingredName: `${this.recipeIngred_input}` });
       this.recipeIngred_input = "";
     },
     removeIngred: function (indx) {

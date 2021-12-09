@@ -52,7 +52,7 @@ export default {
       fd.set("recipeID", currRecipe);
       const res = await axios({
         method: "PUT",
-        url: `http://localhost:3010/recipe/${currRecipe}`,
+        url: `http://localhost:3000/recipe/${currRecipe}`,
         headers: {
           "Content-Type": "multipart/form-data",
           charset: "utf-8",
@@ -73,8 +73,7 @@ export default {
   },
   beforeMount: async function () {
     const currRecipe = this.$route.params.recipeID;
-    const res = await axios.get(`http://localhost:3010/recipe/${currRecipe}`);
-    console.log(res.data);
+    const res = await axios.get(`http://localhost:3000/recipe/${currRecipe}`);
     if (res.data.success) {
       if (res.data.sameAuthor) {
         this.recipeName = res.data.result.name;

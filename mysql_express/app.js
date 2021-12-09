@@ -1,6 +1,6 @@
 var createError = require("http-errors");
 var express = require("express");
-require("dotenv").config({ path: ".env" });
+require("dotenv").config({ path: "../.env" });
 var cors = require("cors");
 var path = require("path");
 var session = require("express-session");
@@ -10,7 +10,6 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
 var authRouter = require("./routes/auth");
 
 var app = express();
@@ -44,7 +43,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: sessionStore,
-    cookie: { secure: false, maxAge: 24000 * 60 * 60, httpOnly: true },
+    cookie: { secure: false, maxAge: 1000 * 60 * 60, httpOnly: true },
     unset: "destroy",
   })
 );
@@ -60,7 +59,6 @@ app.use(function (req, res, next) {
 });
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/auth", authRouter);
 
 // catch 404 and forward to error handler
@@ -78,5 +76,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-app.listen(3010, function () {});
+app.listen(3000, () => {});
 module.exports = app;

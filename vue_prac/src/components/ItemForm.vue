@@ -33,7 +33,7 @@ export default {
       fd.set("itemGroup", this.itemGroup);
       const res = await axios({
         method: "POST",
-        url: "http://localhost:3010/insertProductInfo",
+        url: "http://localhost:3000/insertProductInfo",
         headers: {
           "Content-Type": "multipart/form-data",
           charset: "utf-8",

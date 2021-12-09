@@ -36,7 +36,7 @@ export default {
   },
   beforeMount: async function () {
     const res = await axios({
-      url: "http://localhost:3010/auth/userinfo",
+      url: "http://localhost:3000/auth/userinfo",
       method: "GET",
       headers: {
         charset: "utf-8",
@@ -49,6 +49,7 @@ export default {
       this.userInfo.upvoteLog.forEach((elem) => {
         elem.upvoteDate = new Date(elem.upvoteDate);
       });
+      console.log(this.userInfo);
     } else {
       alert("로그인이 필요합니다!");
       this.$router.push("/login");

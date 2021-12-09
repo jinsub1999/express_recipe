@@ -1,5 +1,5 @@
 var mysql = require("mysql2");
-require("dotenv").config("../.env");
+require("dotenv").config("../../.env");
 
 var conn = mysql.createConnection({
   host: `${process.env.DB_HOST}`,
@@ -7,6 +7,7 @@ var conn = mysql.createConnection({
   password: `${process.env.DB_PASS}`,
   database: `${process.env.DB_NAME}`,
 });
+
 module.exports = conn;
 exports.sessionSetting = {
   host: `${process.env.DB_HOST}`,

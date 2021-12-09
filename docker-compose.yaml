@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  mysql-db:
+    image: mariadb:10.7
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - ./conf.d:/etc/mysql/conf.d
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
+  vme:
+    depends_on:
+      - mysql-db
+    build: .
+    tty: true
+    environment:
+      DB_HOST: mysql-db
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      SESSION_KEY: ${SESSION_KEY}
+    restart: always
+    ports:
+      - "3000:3000"

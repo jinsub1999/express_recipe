@@ -18,10 +18,20 @@
       <button v-if="item.upvoted === 1" @click="removeUpvote(item)" class="p-3 bg-pink-100 hover:bg-pink-300">
         추천 취소
       </button>
-      <router-link :to="{ path: `/modify/${item.id}` }" class="p-3 bg-blue-200 hover:bg-blue-400 text-center">
+      <router-link
+        v-if="item.upvoted !== undefined"
+        :to="{ path: `/modify/${item.id}` }"
+        class="p-3 bg-blue-200 hover:bg-blue-400 text-center"
+      >
         수정
       </router-link>
-      <button @click="removeRecipe(item)" class="p-3 bg-red-200 hover:bg-red-400 rounded-b-md">삭제</button>
+      <button
+        v-if="item.upvoted !== undefined"
+        @click="removeRecipe(item)"
+        class="p-3 bg-red-200 hover:bg-red-400 rounded-b-md"
+      >
+        삭제
+      </button>
     </div>
   </div>
 </template>
@@ -40,24 +50,24 @@ export default {
   methods: {
     upvoteRecipe: async function (params) {
       const recId = params.id;
-      await axios.post(`http://localhost:3010/upvote/${recId}`);
+      await axios.post(`http://localhost:3000/upvote/${recId}`);
       params.upvs++;
       params.upvoted = 1;
     },
     removeUpvote: async function (params) {
       const recId = params.id;
-      await axios.delete(`http://localhost:3010/upvote/${recId}`);
+      await axios.delete(`http://localhost:3000/upvote/${recId}`);
       params.upvs--;
       params.upvoted = 0;
     },
     removeRecipe: async function (params) {
       if (confirm("삭제하겠습니까?")) {
         const recId = params.id;
-        const res = await axios.delete(`http://localhost:3010/recipe/${params.author}/${recId}`);
+        const res = await axios.delete(`http://localhost:3000/recipe/${recId}`);
         if (!res.data.success) {
           alert(res.data.errs[0]);
         } else {
-          const dbQuery = await axios.get("http://localhost:3010/recipe");
+          const dbQuery = await axios.get("http://localhost:3000/recipe");
           dbQuery.data.forEach((elem) => {
             elem.uploadDate = new Date(elem.uploadDate);
             if (elem.modifyDate !== null) elem.modifyDate = new Date(elem.modifyDate);
@@ -70,8 +80,8 @@ export default {
       return `${__date.getFullYear()}년 ${__date.getMonth() + 1}월 ${__date.getDate()}일`;
     },
   },
-  beforeMount: async function () {
-    const dbQuery = await axios.get("http://localhost:3010/recipe");
+  created: async function () {
+    const dbQuery = await axios.get("http://localhost:3000/recipe");
     dbQuery.data.forEach((elem) => {
       elem.uploadDate = new Date(elem.uploadDate);
       if (elem.modifyDate !== null) elem.modifyDate = new Date(elem.modifyDate);

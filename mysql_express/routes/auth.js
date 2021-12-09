@@ -12,7 +12,7 @@ router.post("/login", upload.none(), function (req, res, next) {
   const id = req.body.inputID;
   const pw = req.body.inputPW;
 
-  db.query("select id, pw from users where id = ?", [id], (err, result, fields) => {
+  db.query("select uid, id, pw from users where id = ?", [id], (err, result, fields) => {
     if (err)
       res.json({
         success: false,
@@ -23,6 +23,7 @@ router.post("/login", upload.none(), function (req, res, next) {
       bcrypt.compare(pw, result[0].pw, function (err, valid) {
         if (valid) {
           req.session.userID = id;
+          req.session.UID = result[0].uid;
           req.session.isLogined = true;
           res.json({ success: true, message: "login success." });
         } else {
@@ -108,15 +109,18 @@ router.get("/logout", function (req, res, next) {
 });
 router.get("/userid", function (req, res, next) {
   var session = req.session;
+  req.session.touch();
   if (session.userID === undefined)
     res.json({
       logined: false,
       userID: "",
+      UID: -1,
     });
   else
     res.json({
       logined: true,
       userID: req.session.userID,
+      UID: req.session.UID,
     });
 });
 
@@ -130,11 +134,15 @@ router.get("/userinfo", function (req, res, next) {
     });
   else {
     conn.query(
-      `select * from upvotes LEFT JOIN (SELECT id, name, author from recipes) recNames
-       on id = upvotes.recipeid 
-       where userID = ? 
-       order by upvoteDate desc;`,
-      [session.userID],
+      `
+      SELECT id, name, author, upvoteDate FROM upvotes
+      LEFT JOIN (SELECT id, name, author FROM recipes 
+		    LEFT JOIN (SELECT uid, id AS author FROM users) u_info
+          ON recipes.authorid = u_info.uid) recNames
+		    ON recNames.id = upvotes.recipeid
+      WHERE userID = ?
+      ORDER BY upvoteDate DESC;`,
+      [session.UID],
       function (err, result, fields) {
         if (err) res.json({ errs: err });
         else {

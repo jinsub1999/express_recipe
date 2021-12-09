@@ -37,7 +37,7 @@ export default {
       fd.set("inputID", this.signup_id);
       fd.set("inputPW", this.signup_pw);
       const res = await axios({
-        url: "http://localhost:3010/auth/signup",
+        url: "http://localhost:3000/auth/signup",
         method: "POST",
         data: fd,
         headers: {
@@ -56,7 +56,7 @@ export default {
     },
     tryLogout: async function () {
       const res = await axios({
-        url: "http://localhost:3010/auth/logout",
+        url: "http://localhost:3000/auth/logout",
         method: "GET",
         headers: {
           charset: "utf-8",

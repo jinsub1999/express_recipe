@@ -10,7 +10,7 @@ div(class="mywrapper")
             div(v-if="recipeInfo.modifyDate" class="flex bg-gray-200 p-2 rounded-md items-center mx-1") {{showDate(recipeInfo.modifyDate)}}에 수정됨.
 
         div(class="bg-blue-200 p-2 rounded-md m-2") {{recipeInfo.recipe}}
-        div.flex.justify-end
+        div.flex.justify-end(v-if="recipeInfo.upvoted !== undefined")
             button(v-if="!recipeInfo.upvoted" @click="upvoteRecipe(recipeInfo)" class="p-3 bg-green-300 hover:bg-green-500 mx-2 rounded-md") 추천
             button(v-if="recipeInfo.upvoted" @click="removeUpvote(recipeInfo)" class="p-3 bg-pink-100 hover:bg-pink-300 mx-2 rounded-md") 추천 취소
             router-link(:to="{ path: `/modify/${recipeInfo.id}`}" class="p-3 bg-blue-200 hover:bg-blue-400 text-center mx-2 rounded-md") 수정
@@ -35,20 +35,20 @@ export default {
   methods: {
     upvoteRecipe: async function (params) {
       const recId = params.id;
-      await axios.post(`http://localhost:3010/upvote/${recId}`);
+      await axios.post(`http://localhost:3000/upvote/${recId}`);
       params.upvs++;
       params.upvoted = 1;
     },
     removeUpvote: async function (params) {
       const recId = params.id;
-      await axios.delete(`http://localhost:3010/upvote/${recId}`);
+      await axios.delete(`http://localhost:3000/upvote/${recId}`);
       params.upvs--;
       params.upvoted = 0;
     },
     removeRecipe: async function (params) {
       if (confirm("삭제하겠습니까?")) {
         const recId = params.id;
-        const res = await axios.delete(`http://localhost:3010/recipe/${params.author}/${recId}`);
+        const res = await axios.delete(`http://localhost:3000/recipe/${recId}`);
         if (!res.data.success) {
           alert(res.data.errs[0]);
         } else {
@@ -62,11 +62,12 @@ export default {
   },
   beforeMount: async function () {
     const currRecipe = this.$route.params.recipeID;
-    const res = await axios.get(`http://localhost:3010/recipe/${currRecipe}`);
+    const res = await axios.get(`http://localhost:3000/recipe/${currRecipe}`);
     if (res.data.success) {
       this.recipeInfo = res.data.result;
       this.recipeInfo.uploadDate = new Date(this.recipeInfo.uploadDate);
       if (this.recipeInfo.modifyDate) this.recipeInfo.modifyDate = new Date(this.recipeInfo.modifyDate);
+      console.log(this.recipeInfo);
     } else {
       alert(res.data.message);
       this.$router.push("/");
