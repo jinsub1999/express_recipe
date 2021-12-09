@@ -82,15 +82,16 @@ export default {
   },
   created: async function () {
     const dbQuery = await axios.get("http://localhost:3000/recipe");
-    dbQuery.data.forEach((elem) => {
+    var result = dbQuery.data.result[0];
+    result.forEach((elem) => {
       elem.uploadDate = new Date(elem.uploadDate);
       if (elem.modifyDate !== null) elem.modifyDate = new Date(elem.modifyDate);
     });
-    this.ListofRecipe = dbQuery.data;
+    this.ListofRecipe = result;
   },
   computed: {
     tenRecipe() {
-      return this.ListofRecipe.slice(0, 10);
+      return this.ListofRecipe.slice(0, 100);
     },
   },
 };

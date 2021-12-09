@@ -4,172 +4,127 @@ var multer = require("multer");
 var path = require("path");
 const upload = multer();
 var conn = require("./db");
-var asyncMysql = require("mysql2/promise");
 const { getTimeAsString } = require("./mydate");
 const conn2 = require("./asyncdb");
 router.get("/", function (req, res, next) {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
 });
-router.get("/recipe", function (req, res, next) {
+router.get("/recipe", async function (req, res, next) {
   if (req.session.isLogined) {
+    const connection = await conn2.getConnection(async (__conn) => __conn);
+    var iferr = false;
+    var _result = null;
+    await connection.beginTransaction();
     const UID = req.session.UID;
-    conn.query(
-      `
+    try {
+      const rows = await connection.query(
+        `
       SELECT id, name, author, recipe, uploadDate, modifyDate, 
-        IF(userID IS NOT NULL, 1, 0) AS upvoted, IFNULL(upvs, 0) upvs
-      FROM recipes 
-      LEFT JOIN (SELECT * FROM upvotes WHERE userid=?) ups ON recipes.id = ups.recipeid
-      LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes GROUP BY recipeid) 
-        uups ON recipes.id = uups.recipeid
-      LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid;`,
-      [UID],
-      function (err, rows, fields) {
-        if (err) throw err;
-        if (rows !== undefined) {
-          res.header({ "content-type": "application/json" });
-          res.send(rows);
-        } else res.json({ success: true });
-      }
-    );
+          IF(userID IS NOT NULL, 1, 0) AS upvoted, IFNULL(upvs, 0) upvs
+        FROM recipes 
+        LEFT JOIN (SELECT * FROM upvotes WHERE userid=?) ups ON recipes.id = ups.recipeid
+        LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes GROUP BY recipeid) 
+          uups ON recipes.id = uups.recipeid
+        LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid;
+      `,
+        [UID]
+      );
+      _result = rows;
+    } catch (e) {
+      await connection.rollback();
+      res.json({ success: false, err: e });
+      iferr = true;
+    }
+    if (!iferr) {
+      await connection.commit();
+      res.json({ success: true, result: _result });
+    }
   } else {
-    conn.query(
+    const connection = await conn2.getConnection(async (__conn) => __conn);
+    var iferr = false;
+    var _result = null;
+    await connection.beginTransaction();
+    try {
+      const rows = await connection.query(
+        `
+        SELECT id, name, author, recipe, uploadDate, modifyDate, IFNULL(upvs, 0) upvs
+        FROM recipes 
+        LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes GROUP BY recipeid) 
+          uups ON recipes.id = uups.recipeid
+        LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid;
       `
-      SELECT id, name, author, recipe, uploadDate, modifyDate, IFNULL(upvs, 0) upvs
-      FROM recipes 
-      LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes GROUP BY recipeid) 
-        uups ON recipes.id = uups.recipeid
-      LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid;`,
-      function (err, rows, fields) {
-        if (err) throw err;
-        if (rows !== undefined) {
-          res.header({ "content-type": "application/json" });
-          res.send(rows);
-        } else res.json({ success: true });
-      }
-    );
+      );
+      _result = rows;
+    } catch (e) {
+      await connection.rollback();
+      res.json({ success: false, err: e });
+      iferr = true;
+    }
+    if (!iferr) {
+      await connection.commit();
+      res.json({ success: true, result: _result });
+    }
+    connection.release();
   }
 });
 router.post("/recipe", upload.none(), async function (req, res, next) {
   if (req.session.isLogined) {
-    conn.beginTransaction();
+    const connection = await conn2.getConnection(async (__conn) => __conn);
     const currdate = getTimeAsString();
-    conn2.getConnection;
-    conn.query(`SELECT uid FROM users WHERE id = ?`, [req.session.userID], function (err, result1, fields) {
-      if (err) {
-        conn.rollback();
-        throw err;
-      } else {
-        if (result1[0] === undefined) {
-          conn.rollback();
-          res.json({ success: false, message: "존재하지 않는 사용자입니다." });
+    const iferr = false;
+    await connection.beginTransaction();
+    try {
+      const result2 = await connection.query(
+        `
+        INSERT INTO recipes(name, recipe, authorID, uploadDate) 
+        VALUE(?,?,?,?);`,
+        [req.body.recipeName, req.body.recipeBody, req.session.UID, currdate]
+      );
+      const ingredArr = JSON.parse(req.body.recipeIngred);
+      var recipePK = null;
+      const resultPK1 = await connection.query(`SELECT LAST_INSERT_ID() AS rpk`);
+      recipePK = resultPK1[0][0].rpk;
+      for await (elem of ingredArr) {
+        const ingName = elem.ingredName;
+        const result3 = await connection.query(`SELECT id FROM ingredients WHERE kind = ?`, [ingName]);
+        if (result3[0][0] === undefined) {
+          const result4 = await connection.query(`INSERT INTO ingredients(kind) VALUE(?);`, [ingName]);
+          const result5 = await connection.query(
+            `
+          INSERT INTO ingred_recipe(recipe_id, ingred_id)
+          VALUE(?, (SELECT LAST_INSERT_ID()));`,
+            [recipePK]
+          );
+        } else {
+          const iid = result3[0][0].id;
+
+          const result6 = await connection.query(
+            `INSERT INTO ingred_recipe(recipe_id, ingred_id)
+              VALUE((SELECT LAST_INSERT_ID()), ?);`,
+            [iid]
+          );
         }
-        const currUID = result1[0].uid;
-        conn.query(
-          `INSERT INTO recipes(name, recipe, authorID, uploadDate) 
-          VALUE(?,?,?,?);`,
-          [req.body.recipeName, req.body.recipeBody, currUID, currdate],
-          function (err, result2, fields) {
-            if (err) {
-              conn.rollback();
-              res.json({ success: false, message: "not logined.", errs: ["에러가 발생하였습니다."] });
-            } else {
-              const ingredArr = JSON.parse(req.body.recipeIngred);
-              var ingredSuccess = true;
-              var recipePK = null;
-              conn.query(`SELECT LAST_INSERT_ID() AS rpk`, function (err, resultPK1, fields) {
-                if (err) ingredSuccess = false;
-                else {
-                  recipePK = resultPK1[0].rpk;
-                  ingredArr.forEach((val, idx) => {
-                    if (!ingredSuccess) return;
-                    const ingName = val.ingredName;
-                    conn.query(
-                      `
-                      SELECT id FROM ingredients WHERE kind = ?;
-                      `,
-                      [ingName],
-                      async function (err, result3, fields) {
-                        if (err) {
-                          ingredSuccess = false;
-                        } else if (result3[0] === undefined) {
-                          if (recipePK !== null) {
-                            try {
-                              const mysqlConn = await myPool.getConnection(async (c) => c);
-                              const result4 = await mysqlConn.query(`INSERT INTO ingredients(kind) VALUE(?);`, [
-                                ingName,
-                              ]);
-                              const result5 = await mysqlConn.query(
-                                `
-                              INSERT INTO ingred_recipe(recipe_id, ingred_id)
-                              VALUE(?, (SELECT LAST_INSERT_ID()));`,
-                                [recipePK]
-                              );
-                            } catch (e) {
-                              console.log(e);
-                              ingredSuccess = false;
-                            }
-                            // conn.query(
-                            //   `
-                            //   INSERT INTO ingredients(kind) VALUE(?);
-                            //   `,
-                            //   [ingName],
-                            //   function (err, result4, fields) {
-                            //     console.log("INSERT!!!", err);
-                            //     if (err) ingredSuccess = false;
-                            //     else
-                            //       conn.query(
-                            //         `
-                            //         INSERT INTO ingred_recipe(recipe_id, ingred_id)
-                            //         VALUE(?, (SELECT LAST_INSERT_ID()));
-                            //         `,
-                            //         [recipePK],
-                            //         function (err, result5, fields) {
-                            //           console.log("AFTER INSERT!!!", err);
-                            //           if (err) {
-                            //             ingredSuccess = false;
-                            //           }
-                            //         }
-                            //       );
-                            //   }
-                            // );
-                          } else ingredSuccess = false;
-                        } else {
-                          const iid = result3[0].id;
-                          conn.query(
-                            `
-                            INSERT INTO ingred_recipe(recipe_id, ingred_id)
-                            VALUE((SELECT LAST_INSERT_ID()), ?);
-                            `,
-                            [iid],
-                            function (err, result6, fields) {
-                              if (err) {
-                                ingredSuccess = false;
-                              }
-                            }
-                          );
-                        }
-                      }
-                    );
-                  });
-                  if (ingredSuccess) {
-                    conn.commit();
-                    res.json({
-                      success: true,
-                      message: "Upload success.",
-                    });
-                  } else {
-                    conn.rollback();
-                    res.json({ success: false, message: "not logined.", errs: ["에러가 발생하였습니다."] });
-                  }
-                }
-              });
-            }
-          }
-        );
       }
-    });
+    } catch (err) {
+      console.log(err);
+      await connection.rollback();
+      connection.release();
+      res.json({
+        success: false,
+        message: "not logined.",
+        errs: ["에러 발생"],
+      });
+      iferr = true;
+    }
+    if (!iferr) {
+      await connection.commit();
+      res.json({
+        success: true,
+        message: "확인 메시지",
+      });
+    }
+    connection.release();
   } else {
-    conn.rollback();
     res.json({
       success: false,
       message: "not logined.",
@@ -187,7 +142,7 @@ router.post("/upvote/:recipeID", upload.none(), function (req, res, next) {
       [UID, recId, currdate],
       function (err, result, fields) {
         if (err) {
-          res.status(200).json({ success: false, message: err, errs: ["에러가 발생하였습니다."] });
+          res.json({ success: false, message: err, errs: ["에러가 발생하였습니다."] });
         } else {
           res.json({
             success: true,
@@ -223,7 +178,6 @@ router.delete("/recipe/:recipeID", upload.none(), function (req, res, next) {
       conn.rollback();
       res.json({ success: false, message: "error", errs: ["에러가 발생하였습니다."] });
     } else {
-      console.log(result1);
       if (result1[0].authorID !== UID) {
         conn.rollback();
         res.json({ success: false, message: "error", errs: ["작성자만 삭제가능합니다."] });
@@ -245,92 +199,158 @@ router.delete("/recipe/:recipeID", upload.none(), function (req, res, next) {
 });
 module.exports = router;
 
-router.get("/recipe/:recipeID", function (req, res, next) {
+router.get("/recipe/:recipeID", async function (req, res, next) {
   const recId = req.params.recipeID;
   if (req.session.isLogined) {
+    const connection = await conn2.getConnection(async (__conn) => __conn);
     const usrId = req.session.UID;
-    console.log(usrId, recId);
-    conn.query(
-      `
-      SELECT id, name, author, authorID, recipe, uploadDate, modifyDate, IF(userID IS NOT NULL, 1, 0) AS upvoted,
-       IFNULL(upvs, 0) upvs
-      FROM recipes
-      LEFT JOIN (SELECT userID, recipeID FROM upvotes WHERE userid=?) ups ON recipes.id = ups.recipeid
-      LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes group by recipeid) uups
-        ON recipes.id = uups.recipeid
-      LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid
-      where id = ?;`,
-      [usrId, recId],
-      function (err, rows, fields) {
-        if (err) res.json({ err: err });
-        if (rows !== undefined) {
-          res.json({ success: true, sameAuthor: rows[0].authorID === usrId, result: rows[0] });
-        } else res.json({ success: false });
+    var iferr = false;
+    var _result = null;
+    var _ingred = null;
+    await connection.beginTransaction();
+    try {
+      const rows = await connection.query(
+        `
+        SELECT id, name, author, authorID, recipe, uploadDate, modifyDate, IF(userID IS NOT NULL, 1, 0) AS upvoted,
+          IFNULL(upvs, 0) upvs
+        FROM recipes
+        LEFT JOIN (SELECT userID, recipeID FROM upvotes WHERE userid=?) ups ON recipes.id = ups.recipeid
+        LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes group by recipeid) uups
+          ON recipes.id = uups.recipeid
+        LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid
+        WHERE id = ?;
+        `,
+        [usrId, recId]
+      );
+      _result = rows[0][0];
+      if (rows[0][0] === undefined) throw "NOT FOUND";
+      const ingRes = await connection.query(
+        `
+      SELECT ingred_id, kind FROM recipes
+      LEFT JOIN (ingred_recipe  LEFT JOIN ingredients ON ingredients.id = ingred_recipe.ingred_id)
+        ON recipes.id = ingred_recipe.recipe_id
+      WHERE recipes.id = ?;
+      `,
+        [recId]
+      );
+      if (ingRes[0][0].ingred_id !== null) {
+        _ingred = ingRes[0];
+      } else {
+        _ingred = [];
       }
-    );
+    } catch (e) {
+      iferr = true;
+      res.json({ success: false, err: e });
+    }
+    if (!iferr) {
+      res.json({ success: true, sameAuthor: _result.authorID === usrId, result: _result, ingred: _ingred });
+    }
+    connection.release();
   } else {
-    conn.query(
-      `
-    SELECT id, name, author, recipe, uploadDate, modifyDate, IFNULL(upvs, 0) AS upvs
-    FROM recipes LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes group by recipeid) ups 
-      ON recipes.id = ups.recipeid
-    LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid
-    where id = ?;
-    `,
-      [recId],
-      function (err, rows, fields) {
-        if (err) res.json({ err: err });
-        if (rows !== undefined) {
-          res.header({ "content-type": "application/json" });
-          res.json({ success: true, sameAuthor: false, result: rows[0] });
-        } else res.json({ success: false });
+    const connection = await conn2.getConnection(async (__conn) => __conn);
+    var iferr = false;
+    var _result = null;
+    var _ingred = null;
+    await connection.beginTransaction();
+    try {
+      const rows = await connection.query(
+        `
+        SELECT id, name, author, recipe, uploadDate, modifyDate, IFNULL(upvs, 0) AS upvs
+        FROM recipes LEFT JOIN (SELECT recipeid, count(recipeid) as upvs FROM upvotes group by recipeid) ups 
+          ON recipes.id = ups.recipeid
+        LEFT JOIN (SELECT uid, id as author from users) u_info ON recipes.authorID = u_info.uid
+        where id = ?;
+        `,
+        [recId]
+      );
+      _result = rows[0][0];
+      if (rows[0][0] === undefined) throw "NOT FOUND";
+      const ingRes = await connection.query(
+        `
+      SELECT ingred_id, kind FROM recipes
+      LEFT JOIN (ingred_recipe  LEFT JOIN ingredients ON ingredients.id = ingred_recipe.ingred_id)
+        ON recipes.id = ingred_recipe.recipe_id
+      WHERE recipes.id = ?;
+      `,
+        [recId]
+      );
+      if (ingRes[0][0].ingred_id !== null) {
+        _ingred = ingRes[0];
+      } else {
+        _ingred = [];
       }
-    );
+    } catch (e) {
+      iferr = true;
+      res.json({ success: false, err: e });
+    }
+    if (!iferr) {
+      res.json({ success: true, sameAuthor: false, result: _result, ingred: _ingred });
+    }
+    connection.release();
   }
 });
 
-router.put("/recipe/:recipeID", upload.none(), function (req, res, next) {
+router.put("/recipe/:recipeID", upload.none(), async function (req, res, next) {
   if (req.session.isLogined) {
+    const connection = await conn2.getConnection(async (__conn) => __conn);
+    var iferr = false;
+    await connection.beginTransaction();
     const currdate = getTimeAsString();
-    conn.query(
-      `update recipes set name = ?, recipe = ?, modifyDate = ? where id = ?;`,
-      [req.body.recipeName, req.body.recipeBody, currdate, req.body.recipeID],
-      function (err, result, fields) {
-        if (err) {
-          res.json({ success: false, message: "not logined.", errs: ["에러가 발생하였습니다."] });
+    try {
+      const result = await connection.query(
+        `
+        UPDATE recipes SET name = ?, recipe = ?, modifyDate = ? WHERE id = ?;`,
+        [req.body.recipeName, req.body.recipeBody, currdate, req.body.recipeID]
+      );
+      console.log(req.body);
+      const ingList = JSON.parse(req.body.recipeIngred);
+      console.log(ingList);
+      const delResult = await connection.query(
+        `
+        DELETE FROM ingred_recipe WHERE recipe_id = ?;`,
+        [req.body.recipeID]
+      );
+      for await (elem of ingList) {
+        const ingName = elem.kind;
+        const result3 = await connection.query(`SELECT id FROM ingredients WHERE kind = ?`, [ingName]);
+        if (result3[0][0] === undefined) {
+          const result4 = await connection.query(`INSERT INTO ingredients(kind) VALUE(?);`, [ingName]);
+          const result5 = await connection.query(
+            `
+          INSERT INTO ingred_recipe(recipe_id, ingred_id)
+          VALUE(?, (SELECT LAST_INSERT_ID()));`,
+            [req.body.recipeID]
+          );
         } else {
-          res.header({ "content-type": "application/json" });
-          res.json({
-            success: true,
-            message: "Modify success.",
-          });
+          const iid = result3[0][0].id;
+          const result6 = await connection.query(
+            `INSERT INTO ingred_recipe(recipe_id, ingred_id)
+              VALUE(?, ?);`,
+            [req.body.recipeID, iid]
+          );
         }
       }
-    );
+    } catch (e) {
+      await connection.rollback();
+      iferr = true;
+      console.log(e);
+      res.json({
+        success: false,
+        message: "Modify failed.",
+      });
+    }
+    if (!iferr) {
+      await connection.commit();
+      res.json({
+        success: true,
+        message: "Modify success.",
+      });
+    }
+    connection.release();
   } else
     res.json({
       success: false,
       message: "not logined.",
       errs: ["로그인이 필요한 서비스입니다."],
     });
-});
-
-router.post("/test_trans", upload.none(), function (req, res, next) {
-  conn.beginTransaction();
-  conn.query(`SELECT * FROM recipes;`, function (err, result, fields) {
-    if (err) {
-      conn.rollback();
-      res.json({ err: err });
-    } else {
-    }
-  });
-  conn.query(`SELECT * FROM recipes;`, function (err, result, fields) {
-    if (err) {
-      conn.rollback();
-      res.json({ err: err });
-    } else {
-      conn.commit();
-      res.json({ result: result });
-    }
-  });
 });

@@ -9,7 +9,7 @@ div(class="mywrapper")
     label(for="r_ingred" class="block p-1 m-2 bg-yellow-300 rounded-md") 필요한 재료를 적어주세요
     input(v-model="recipeIngred_input" name="r_ingred" class="m-2 p-2 rounded-md")
     div(class="flex overflow-x-auto")
-      div(v-for="(ingred, indx) in recipeIngred" class="flex flex-shrink-0 justify-center items-center m-2 pl-2 bg-gray-600 rounded-md") {{ingred.name}}
+      div(v-for="(ingred, indx) in recipeIngred" class="flex flex-shrink-0 justify-center items-center m-2 pl-2 bg-gray-600 rounded-md") {{ingred.kind}}
         button(@click="removeIngred(indx)" class="m-2 px-2 rounded-md bg-red-300 hover:bg-red-500") X
     button(name="r_ingred" @click="addIngred" class="hover:bg-blue-600 bg-blue-400 m-2 rounded-md") 재료추가
 
@@ -50,6 +50,7 @@ export default {
       fd.set("recipeName", this.recipeName);
       fd.set("recipeBody", this.recipeBody);
       fd.set("recipeID", currRecipe);
+      fd.set("recipeIngred", JSON.stringify(this.recipeIngred));
       const res = await axios({
         method: "PUT",
         url: `http://localhost:3000/recipe/${currRecipe}`,
@@ -64,7 +65,7 @@ export default {
       if (!this.modifyFailed) this.$router.go(-1);
     },
     addIngred: function () {
-      this.recipeIngred.push({ name: `${this.recipeIngred_input}` });
+      this.recipeIngred.push({ kind: `${this.recipeIngred_input}` });
       this.recipeIngred_input = "";
     },
     removeIngred: function (indx) {
@@ -78,6 +79,8 @@ export default {
       if (res.data.sameAuthor) {
         this.recipeName = res.data.result.name;
         this.recipeBody = res.data.result.recipe;
+        this.recipeIngred = res.data.ingred;
+        console.log(this.recipeIngred);
       } else {
         alert("작성자만 수정가능합니다.");
         this.$router.go(-1);

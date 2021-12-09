@@ -6,6 +6,7 @@ const conn2 = mysql2.createPool({
   user: `${process.env.DB_USER}`,
   password: `${process.env.DB_PASS}`,
   database: `${process.env.DB_NAME}`,
+  connectionLimit: 30,
 });
 
 module.exports = conn2;

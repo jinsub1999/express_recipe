@@ -10,12 +10,14 @@ div(class="mywrapper")
             div(v-if="recipeInfo.modifyDate" class="flex bg-gray-200 p-2 rounded-md items-center mx-1") {{showDate(recipeInfo.modifyDate)}}에 수정됨.
 
         div(class="bg-blue-200 p-2 rounded-md m-2") {{recipeInfo.recipe}}
+        div.flex.justify-start(v-if="1 > 0")
+          div(v-for="item in recipeInfo.ingreds" class="p-2 bg-gray-300 hover:bg-gray-500 mx-2 rounded-md") {{item.kind}}
         div.flex.justify-end(v-if="recipeInfo.upvoted !== undefined")
             button(v-if="!recipeInfo.upvoted" @click="upvoteRecipe(recipeInfo)" class="p-3 bg-green-300 hover:bg-green-500 mx-2 rounded-md") 추천
             button(v-if="recipeInfo.upvoted" @click="removeUpvote(recipeInfo)" class="p-3 bg-pink-100 hover:bg-pink-300 mx-2 rounded-md") 추천 취소
             router-link(:to="{ path: `/modify/${recipeInfo.id}`}" class="p-3 bg-blue-200 hover:bg-blue-400 text-center mx-2 rounded-md") 수정
             button(@click="removeRecipe(recipeInfo)" class="p-3 bg-red-200 hover:bg-red-400 rounded-md mx-2") 삭제
-
+        
 </template>
 
 <script>
@@ -67,11 +69,16 @@ export default {
       this.recipeInfo = res.data.result;
       this.recipeInfo.uploadDate = new Date(this.recipeInfo.uploadDate);
       if (this.recipeInfo.modifyDate) this.recipeInfo.modifyDate = new Date(this.recipeInfo.modifyDate);
-      console.log(this.recipeInfo);
+      this.recipeInfo.ingreds = res.data.ingred;
     } else {
       alert(res.data.message);
       this.$router.push("/");
     }
+  },
+  computed: {
+    ingLen: function () {
+      return this.recipeInfo.ingreds.length;
+    },
   },
 };
 </script>
