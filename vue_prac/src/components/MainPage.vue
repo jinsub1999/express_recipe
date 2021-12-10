@@ -1,24 +1,29 @@
 <template>
   <div class="mywrapper">
     <nav-vue />
-    <div class="flex flex-row justify-center p-2">
-      <recipe-list-vue></recipe-list-vue>
-      <recipe-form-vue></recipe-form-vue>
+    <div class="m-3 p-2 flex items-center justify-center text-green-500 bg-gray-200 rounded text-3xl">환영합니다!</div>
+    <div class="flex">
+      <router-link
+        to="/recipe"
+        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-xl"
+        >레시피 조회</router-link
+      >
+      <router-link
+        to="/products"
+        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-xl"
+        >제품 조회</router-link
+      >
     </div>
   </div>
 </template>
 
 <script>
 import NavVue from "./Navbar";
-import RecipeFormVue from "./RecipeForm.vue";
-import RecipeListVue from "./RecipeList.vue";
 import "../assets/myComponents.css";
 export default {
   name: "MainPage",
   components: {
     NavVue,
-    RecipeFormVue,
-    RecipeListVue,
   },
 };
 </script>

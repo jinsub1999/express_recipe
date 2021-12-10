@@ -36,7 +36,7 @@ export default {
   },
   beforeMount: async function () {
     const res = await axios({
-      url: "http://localhost:3000/auth/userinfo",
+      url: "http://localhost:3000/api/auth/userinfo",
       method: "GET",
       headers: {
         charset: "utf-8",

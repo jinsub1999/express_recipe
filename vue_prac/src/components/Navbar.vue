@@ -3,8 +3,10 @@ div(class="max-w-7xl mx-2 px-2 sm:px-6 lg:px-8 bg-gray-600 rounded-br-xl rounded
     div(class="flex items-center justify-between h-20 bg-indigo-300 pl-3 pr-2")
       div
         router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 홈페이지
-        router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 조회
-        router-link(to="/" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 추가
+        router-link(to="/recipe" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 조회
+        router-link(to="/recipe/form" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 레시피 추가
+        router-link(to="/products" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 제품 조회
+        router-link(to="/productsForm" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 제품 추가
       div
         div
           router-link(v-if="!logined" to="/login" class="bg-indigo-400 hover:bg-indigo-600 text-green-200 p-3 rounded-md m-1") 로그인
@@ -28,7 +30,7 @@ export default {
   methods: {
     tryLogout: async function () {
       await axios({
-        url: "http://localhost:3000/auth/logout",
+        url: "http://localhost:3000/api/auth/logout",
         method: "GET",
         headers: {
           charset: "utf-8",
@@ -41,7 +43,7 @@ export default {
   beforeMount: async function () {
     document.body.classList.add("bgcolor");
     const res = await axios({
-      url: "http://localhost:3000/auth/userid",
+      url: "http://localhost:3000/api/auth/userid",
       method: "GET",
       headers: {
         charset: "utf-8",

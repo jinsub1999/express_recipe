@@ -37,20 +37,20 @@ export default {
   methods: {
     upvoteRecipe: async function (params) {
       const recId = params.id;
-      await axios.post(`http://localhost:3000/upvote/${recId}`);
+      await axios.post(`http://localhost:3000/api/upvote/${recId}`);
       params.upvs++;
       params.upvoted = 1;
     },
     removeUpvote: async function (params) {
       const recId = params.id;
-      await axios.delete(`http://localhost:3000/upvote/${recId}`);
+      await axios.delete(`http://localhost:3000/api/upvote/${recId}`);
       params.upvs--;
       params.upvoted = 0;
     },
     removeRecipe: async function (params) {
       if (confirm("삭제하겠습니까?")) {
         const recId = params.id;
-        const res = await axios.delete(`http://localhost:3000/recipe/${recId}`);
+        const res = await axios.delete(`http://localhost:3000/api/recipe/${recId}`);
         if (!res.data.success) {
           alert(res.data.errs[0]);
         } else {
@@ -64,7 +64,7 @@ export default {
   },
   beforeMount: async function () {
     const currRecipe = this.$route.params.recipeID;
-    const res = await axios.get(`http://localhost:3000/recipe/${currRecipe}`);
+    const res = await axios.get(`http://localhost:3000/api/recipe/${currRecipe}`);
     if (res.data.success) {
       this.recipeInfo = res.data.result;
       this.recipeInfo.uploadDate = new Date(this.recipeInfo.uploadDate);

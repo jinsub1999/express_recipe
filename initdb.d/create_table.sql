@@ -36,9 +36,10 @@ CREATE TABLE upvotes (
 );
 
 CREATE TABLE products (
-	id INT NOT NULL,
+	id INT NOT NULL AUTO_INCREMENT,
     name CHAR(70) NOT NULL,
     amount INT NOT NULL,
+    price INT NOT NULL,
     kind_id INT NOT NULL,
     seller_id INT NOT NULL,
 	FOREIGN KEY (seller_id) REFERENCES users (uid) ON DELETE CASCADE,

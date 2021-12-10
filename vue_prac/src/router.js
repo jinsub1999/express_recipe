@@ -30,6 +30,31 @@ const routes = [
     name: "recipeItem",
     component: () => import("@/components/RecipeItem"),
   },
+  {
+    path: "/recipe",
+    name: "recipeList",
+    component: () => import("@/components/RecipeList"),
+  },
+  {
+    path: "/recipe/form",
+    name: "recipeForm",
+    component: () => import("@/components/RecipeForm"),
+  },
+  {
+    path: "/products",
+    name: "productPage",
+    component: () => import("@/components/ProductPage"),
+  },
+  {
+    path: "/productsForm",
+    name: "productForm",
+    component: () => import("@/components/ProductForm"),
+  },
+  {
+    path: "/products/:productID",
+    name: "productItem",
+    component: () => import("@/components/ProductItem"),
+  },
 ];
 
 const router = createRouter({

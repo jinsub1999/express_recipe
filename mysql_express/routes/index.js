@@ -71,7 +71,8 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
   if (req.session.isLogined) {
     const connection = await conn2.getConnection(async (__conn) => __conn);
     const currdate = getTimeAsString();
-    const iferr = false;
+    var rpk = null;
+    var iferr = false;
     await connection.beginTransaction();
     try {
       const result2 = await connection.query(
@@ -84,6 +85,7 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
       var recipePK = null;
       const resultPK1 = await connection.query(`SELECT LAST_INSERT_ID() AS rpk`);
       recipePK = resultPK1[0][0].rpk;
+      rpk = recipePK;
       for await (elem of ingredArr) {
         const ingName = elem.ingredName;
         const result3 = await connection.query(`SELECT id FROM ingredients WHERE kind = ?`, [ingName]);
@@ -108,7 +110,6 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
     } catch (err) {
       console.log(err);
       await connection.rollback();
-      connection.release();
       res.json({
         success: false,
         message: "not logined.",
@@ -121,6 +122,7 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
       res.json({
         success: true,
         message: "확인 메시지",
+        recipeKey: rpk,
       });
     }
     connection.release();
@@ -197,7 +199,6 @@ router.delete("/recipe/:recipeID", upload.none(), function (req, res, next) {
     }
   });
 });
-module.exports = router;
 
 router.get("/recipe/:recipeID", async function (req, res, next) {
   const recId = req.params.recipeID;
@@ -354,3 +355,5 @@ router.put("/recipe/:recipeID", upload.none(), async function (req, res, next) {
       errs: ["로그인이 필요한 서비스입니다."],
     });
 });
+
+module.exports = router;
