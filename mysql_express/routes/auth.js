@@ -6,6 +6,7 @@ const upload = multer();
 var bcrypt = require("bcrypt");
 const conn = require("./db");
 const { getTimeAsString } = require("./mydate");
+const conn2 = require("./asyncdb");
 const saltRounds = 10;
 
 router.post("/login", upload.none(), function (req, res, next) {
@@ -44,7 +45,7 @@ router.post("/login", upload.none(), function (req, res, next) {
   });
 });
 
-router.post("/signup", upload.none(), function (req, res, next) {
+router.post("/signup", upload.none(), async function (req, res, next) {
   const id = req.body.inputID;
   const pw = req.body.inputPW;
   var isErr = false;
@@ -69,27 +70,43 @@ router.post("/signup", upload.none(), function (req, res, next) {
     });
   } else {
     const currdate = getTimeAsString();
-    bcrypt.hash(pw, saltRounds, function (err, hashed) {
-      db.query(
-        "insert into users(id, pw, signupDate) value(?, ?, ?);",
-        [id, hashed, currdate],
-        (err, result, fields) => {
-          if (err)
-            res.json({
-              success: false,
-              message: "Signup failed. There's Same ID.",
-              errs: ["Signup failed. There's Same ID."],
-            });
-          else {
-            console.log(result);
-            res.json({
-              success: true,
-              message: "Signup Success.",
-            });
-          }
-        }
+    const connection = await conn2.getConnection(async (c) => c);
+    try {
+      const sameID = await connection.query(
+        `
+      SELECT uid FROM users WHERE id = ? 
+      `,
+        [id]
       );
-    });
+      if (sameID[0][0] !== undefined) throw "SAME ID EXISTS";
+      bcrypt.hash(pw, saltRounds, async function (err, hashed) {
+        const result = await connection.query(
+          `
+        INSERT INTO users(id, pw, signupDate) VALUE(?, ?, ?);`,
+          [id, hashed, currdate]
+        );
+        console.log(result);
+        await connection.commit();
+        res.json({
+          success: true,
+          message: "Signup Success.",
+        });
+      });
+    } catch (error) {
+      await connection.rollback();
+      console.log(error);
+      if (error === "SAME ID EXISTS")
+        res.json({
+          success: false,
+          errs: ["Signup failed. There's Same ID."],
+        });
+      else
+        res.json({
+          success: false,
+          errs: [error],
+        });
+    }
+    connection.release();
   }
 });
 
@@ -104,6 +121,7 @@ router.get("/logout", function (req, res, next) {
     res.send({
       success: false,
       message: "Not Logined.",
+      err: "NOT LOGINED",
     });
   }
 });
@@ -124,7 +142,9 @@ router.get("/userid", function (req, res, next) {
     });
 });
 
-router.get("/userinfo", function (req, res, next) {
+router.get("/userinfo", async function (req, res, next) {
+  const connection = await conn2.getConnection(async (c) => c);
+  connection.beginTransaction();
   var session = req.session;
   if (session.userID === undefined)
     res.json({
@@ -133,8 +153,9 @@ router.get("/userinfo", function (req, res, next) {
       errs: ["not logined."],
     });
   else {
-    conn.query(
-      `
+    try {
+      const upvLog = await connection.query(
+        `
       SELECT id, name, author, upvoteDate FROM upvotes
       LEFT JOIN (SELECT id, name, author FROM recipes 
 		    LEFT JOIN (SELECT uid, id AS author FROM users) u_info
@@ -142,21 +163,38 @@ router.get("/userinfo", function (req, res, next) {
 		    ON recNames.id = upvotes.recipeid
       WHERE userID = ?
       ORDER BY upvoteDate DESC;`,
-      [session.UID],
-      function (err, result, fields) {
-        if (err) res.json({ errs: err });
-        else {
-          res.json({
-            success: true,
-            userInfo: {
-              userID: req.session.userID,
-              upvoteLog: result,
-            },
-          });
-        }
-      }
-    );
+        [session.UID]
+      );
+      const bLog = await connection.query(
+        `
+      SELECT order_id, food_id, orderDate, prodName, sellerID, orderAmount FROM orders
+      LEFT JOIN (SELECT id, name as prodName FROM products) prod ON prod.id = food_id
+      LEFT JOIN (SELECT uid, id as sellerID FROM users) U ON U.uid = seller_id
+      WHERE buyer_id = ?;`,
+        [session.UID]
+      );
+      const upvoteLog = upvLog[0];
+      const buyLog = bLog[0];
+      console.log(upvoteLog, buyLog);
+      await connection.commit();
+      res.json({
+        success: true,
+        userInfo: {
+          userID: req.session.userID,
+          upvoteLog: upvoteLog,
+          buyLog: buyLog,
+        },
+      });
+    } catch (error) {
+      await connection.rollback();
+      console.log(error);
+      res.json({
+        success: false,
+        err: error,
+      });
+    }
   }
+  connection.release();
 });
 
 module.exports = router;

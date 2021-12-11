@@ -11,7 +11,7 @@ div(class="mywrapper")
 
         div(class="bg-blue-200 p-2 rounded-md m-2") {{recipeInfo.recipe}}
         div.flex.justify-start(v-if="1 > 0")
-          div(v-for="item in recipeInfo.ingreds" class="p-2 bg-gray-300 hover:bg-gray-500 mx-2 rounded-md") {{item.kind}}
+          router-link(v-for="item in recipeInfo.ingreds" class="p-2 bg-gray-300 hover:bg-gray-500 mx-2 rounded-md" :to="{path : `/kinds/${item.ingred_id}`}") {{item.kind}}
         div.flex.justify-end(v-if="recipeInfo.upvoted !== undefined")
             button(v-if="!recipeInfo.upvoted" @click="upvoteRecipe(recipeInfo)" class="p-3 bg-green-300 hover:bg-green-500 mx-2 rounded-md") 추천
             button(v-if="recipeInfo.upvoted" @click="removeUpvote(recipeInfo)" class="p-3 bg-pink-100 hover:bg-pink-300 mx-2 rounded-md") 추천 취소
@@ -59,7 +59,9 @@ export default {
       }
     },
     showDate: function (__date) {
-      return `${__date.getFullYear()}년 ${__date.getMonth() + 1}월 ${__date.getDate()}일`;
+      return `${__date.getFullYear()}년 ${
+        __date.getMonth() + 1
+      }월 ${__date.getDate()}일 ${__date.getHours()}시 ${__date.getMinutes()}분`;
     },
   },
   beforeMount: async function () {

@@ -55,6 +55,11 @@ const routes = [
     name: "productItem",
     component: () => import("@/components/ProductItem"),
   },
+  {
+    path: "/kinds/:kindID",
+    name: "kinds",
+    component: () => import("@/components/ProductKind"),
+  },
 ];
 
 const router = createRouter({

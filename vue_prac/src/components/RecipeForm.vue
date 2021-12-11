@@ -51,7 +51,6 @@ export default {
       fd.set("recipeName", this.recipeName);
       fd.set("recipeBody", this.recipeBody);
       fd.set("recipeIngred", JSON.stringify(this.recipeIngred));
-      console.log(this.recipeIngred);
       const res = await axios({
         method: "POST",
         url: "http://localhost:3000/api/recipe",
@@ -61,7 +60,6 @@ export default {
         },
         data: fd,
       });
-      console.log(res);
       this.uploadFailed = !res.data.success;
       this.uploadErrs = res.data.errs;
       if (!this.uploadFailed) {

@@ -61,7 +61,6 @@ export default {
           withCredentials: true,
           data: fd,
         });
-        console.log(res);
         if (res.data.success) {
           alert("성공적으로 등록했습니다.");
           this.$router.push("/products");
@@ -80,7 +79,6 @@ export default {
         withCredentials: true,
         data: fd,
       });
-      console.log(res);
       this.ingredList.push({ id: res.data.kindID, kind: this.ingred_input });
       this.ingred_input = "";
     },

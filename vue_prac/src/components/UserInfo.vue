@@ -11,7 +11,18 @@ div(class="mywrapper")
       div(class="flex justify-between my-1")
         div(class="w-1/12 block")
         div(class="flex items-center p-1 bg-indigo-300 rounded-md") By {{item.author}}
-
+  div(class="flex flex-col justify-center items-center w-3/4 m-1 p-2 bg-blue-200 text-center rounded-lg") 회원님이 주문한 제품들
+    div(class="flex flex-col p-3 m-1 rounded-md bg-green-200 text-left w-3/4" v-for="item in userInfo.buyLog")
+      router-link(class="bg-blue-300 text-center w-60 overflow-hidden rounded-md p-3 m-2 hover:bg-blue-500" :to="{path: `/products/${item.food_id}`}") {{item.prodName}}
+      div(class="flex justify-between my-1")
+        div(class="w-1/12 block")
+        div(class="flex items-center p-1 bg-green-300 rounded-md") 구매 일시 : {{showDate(item.orderDate)}}
+      div(class="flex justify-between my-1")
+        div(class="w-1/12 block")
+        div(class="flex items-center p-1 bg-pink-100 rounded-md") 구매량 : {{item.orderAmount}}
+      div(class="flex justify-between my-1")
+        div(class="w-1/12 block")
+        div(class="flex items-center p-1 bg-indigo-300 rounded-md") By {{item.sellerID}}
 
 </template>
 
@@ -31,7 +42,9 @@ export default {
   },
   methods: {
     showDate: function (__date) {
-      return `${__date.getFullYear()}년 ${__date.getMonth() + 1}월 ${__date.getDate()}일`;
+      return `${__date.getFullYear()}년 ${
+        __date.getMonth() + 1
+      }월 ${__date.getDate()}일 ${__date.getHours()}시 ${__date.getMinutes()}분`;
     },
   },
   beforeMount: async function () {
@@ -49,7 +62,9 @@ export default {
       this.userInfo.upvoteLog.forEach((elem) => {
         elem.upvoteDate = new Date(elem.upvoteDate);
       });
-      console.log(this.userInfo);
+      this.userInfo.buyLog.forEach((elem) => {
+        elem.orderDate = new Date(elem.orderDate);
+      });
     } else {
       alert("로그인이 필요합니다!");
       this.$router.push("/login");

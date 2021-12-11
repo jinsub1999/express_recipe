@@ -1,4 +1,5 @@
-USE DATABASE recipeDB;
+USE recipeDB;
+
 CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
 	id CHAR(70) NOT NULL,
@@ -53,6 +54,7 @@ CREATE TABLE orders (
     seller_id INT NOT NULL,
     food_id INT NOT NULL,
     orderDate DATETIME NOT NULL,
+    orderAmount INT NOT NULL,
     FOREIGN KEY (buyer_id) REFERENCES users (uid) ON DELETE CASCADE,
 	FOREIGN KEY (seller_id) REFERENCES products (seller_id) ON DELETE CASCADE,
 	FOREIGN KEY (food_id) REFERENCES products (id) ON DELETE CASCADE,

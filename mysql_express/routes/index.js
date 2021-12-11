@@ -102,8 +102,8 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
 
           const result6 = await connection.query(
             `INSERT INTO ingred_recipe(recipe_id, ingred_id)
-              VALUE((SELECT LAST_INSERT_ID()), ?);`,
-            [iid]
+              VALUE(?, ?);`,
+            [rpk, iid]
           );
         }
       }
@@ -112,7 +112,7 @@ router.post("/recipe", upload.none(), async function (req, res, next) {
       await connection.rollback();
       res.json({
         success: false,
-        message: "not logined.",
+        message: err,
         errs: ["에러 발생"],
       });
       iferr = true;
@@ -192,7 +192,7 @@ router.delete("/recipe/:recipeID", upload.none(), function (req, res, next) {
             conn.commit();
             res.json({
               success: true,
-              message: "Removing upvote success.",
+              message: "Removing Recipe success.",
             });
           }
         });
@@ -303,9 +303,7 @@ router.put("/recipe/:recipeID", upload.none(), async function (req, res, next) {
         UPDATE recipes SET name = ?, recipe = ?, modifyDate = ? WHERE id = ?;`,
         [req.body.recipeName, req.body.recipeBody, currdate, req.body.recipeID]
       );
-      console.log(req.body);
       const ingList = JSON.parse(req.body.recipeIngred);
-      console.log(ingList);
       const delResult = await connection.query(
         `
         DELETE FROM ingred_recipe WHERE recipe_id = ?;`,

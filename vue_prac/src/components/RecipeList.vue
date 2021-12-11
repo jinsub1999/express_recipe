@@ -3,7 +3,7 @@
     <nav-vue />
     <div class="flex flex-col max-h-96 overflow-y-auto bg-blue-200 rounded-md">
       <div
-        v-for="item in tenRecipe"
+        v-for="item in ListofRecipe"
         :key="item.id"
         class="flex flex-col flex-shrink-0 m-2 p-1 bg-yellow-200 rounded-sm"
       >
@@ -13,7 +13,6 @@
         >
           {{ item.name }}
         </router-link>
-        <div class="p-3 bg-gray-400">{{ item.recipe }}</div>
         <div class="p-3 bg-gray-400">{{ item.author }}</div>
         <div class="p-3 bg-gray-400">{{ item.upvs }}</div>
         <div class="p-3 bg-gray-400">만든 날짜 : {{ showDate(item.uploadDate) }}</div>
@@ -48,14 +47,13 @@ import NavVue from "./Navbar";
 import "../assets/myComponents.css";
 
 export default {
-  name: "ItemList",
+  name: "RecipeList",
   components: {
     NavVue,
   },
   data: function () {
     return {
       ListofRecipe: [],
-      reload_page: 0,
     };
   },
   methods: {
@@ -79,19 +77,22 @@ export default {
           alert(res.data.errs[0]);
         } else {
           const dbQuery = await axios.get("http://localhost:3000/api/recipe");
-          dbQuery.data.forEach((elem) => {
+          const result = dbQuery.data.result[0];
+          result.forEach((elem) => {
             elem.uploadDate = new Date(elem.uploadDate);
             if (elem.modifyDate !== null) elem.modifyDate = new Date(elem.modifyDate);
           });
-          this.ListofRecipe = dbQuery.data;
+          this.ListofRecipe = result;
         }
       }
     },
     showDate: function (__date) {
-      return `${__date.getFullYear()}년 ${__date.getMonth() + 1}월 ${__date.getDate()}일`;
+      return `${__date.getFullYear()}년 ${
+        __date.getMonth() + 1
+      }월 ${__date.getDate()}일 ${__date.getHours()}시 ${__date.getMinutes()}분`;
     },
   },
-  created: async function () {
+  beforeMount: async function () {
     const dbQuery = await axios.get("http://localhost:3000/api/recipe");
     var result = dbQuery.data.result[0];
     result.forEach((elem) => {
@@ -100,10 +101,6 @@ export default {
     });
     this.ListofRecipe = result;
   },
-  computed: {
-    tenRecipe() {
-      return this.ListofRecipe.slice(0, 100);
-    },
-  },
+  computed: {},
 };
 </script>

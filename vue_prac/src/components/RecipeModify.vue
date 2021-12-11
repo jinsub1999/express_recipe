@@ -80,7 +80,6 @@ export default {
         this.recipeName = res.data.result.name;
         this.recipeBody = res.data.result.recipe;
         this.recipeIngred = res.data.ingred;
-        console.log(this.recipeIngred);
       } else {
         alert("작성자만 수정가능합니다.");
         this.$router.go(-1);

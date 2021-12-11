@@ -54,18 +54,6 @@ export default {
         this.$router.push("/login");
       }
     },
-    tryLogout: async function () {
-      const res = await axios({
-        url: "http://localhost:3000/api/auth/logout",
-        method: "GET",
-        headers: {
-          charset: "utf-8",
-        },
-        withCredentials: true,
-      });
-      console.log(res);
-      this.$router.push("/");
-    },
   },
 };
 </script>

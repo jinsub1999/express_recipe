@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     tryLogout: async function () {
-      await axios({
+      const res = await axios({
         url: "http://localhost:3000/api/auth/logout",
         method: "GET",
         headers: {
@@ -37,7 +37,10 @@ export default {
         },
         withCredentials: true,
       });
-      this.$router.push("/login");
+      if (res.data.success === true) this.$router.push("/login");
+      else {
+        alert(res.data.err);
+      }
     },
   },
   beforeMount: async function () {

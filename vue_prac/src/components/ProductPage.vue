@@ -6,10 +6,11 @@ div(class="mywrapper")
             div(v-for="item in productList" class="m-1 p-1 bg-gray-200 rounded-sm")
                 router-link(class="p-1 m-1 bg-yellow-200 hover:bg-yellow-300 rounded-sm flex items-center justify-center"
                 :to="{ path: `/products/${item.id}` }") {{item.name}}
-                div 제품 종류 : {{item.kind}}
-                div 제품 수량 : {{item.amount}}
-                div 제품 가격 : {{item.price}}
+                div 종류 : {{item.kind}}
+                div 수량 : {{item.amount}}
+                div 가격 : {{item.price}}
                 div 판매자 : {{item.seller}}
+                
 
 </template>
 

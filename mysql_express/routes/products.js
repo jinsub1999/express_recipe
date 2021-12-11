@@ -214,14 +214,13 @@ router.post("/order", upload.none(), async function (req, res, next) {
         [prodID]
       );
       if (seller[0][0].seller_id === undefined) throw "NOT FOUND PRODUCTS";
-      console.log(seller[0]);
       const seller_id = seller[0][0].seller_id;
       await connection.query(
         `
-    INSERT INTO orders(buyer_id, seller_id, food_id, orderDate)
-    VALUE(?, ?, ?, ?)
+    INSERT INTO orders(buyer_id, seller_id, food_id, orderDate, orderAmount)
+    VALUE(?, ?, ?, ?, ?)
     `,
-        [UID, seller_id, prodID, currdate]
+        [UID, seller_id, prodID, currdate, buyAmount]
       );
 
       await connection.commit();
@@ -253,4 +252,72 @@ router.post("/order", upload.none(), async function (req, res, next) {
     });
   }
 });
+
+router.get("/kind/:currkind", async function (req, res, next) {
+  const currkind = req.params.currkind;
+  const connection = await conn2.getConnection(async (__conn) => __conn);
+  const UID = req.session.UID;
+  const buyAmount = req.body.buyAmount;
+  await connection.beginTransaction();
+  try {
+    const result = await connection.query(
+      `
+    SELECT id, name, kind_id, price, amount, seller_id, seller FROM products 
+    LEFT JOIN (SELECT uid, id as seller FROM users) U ON  U.uid = seller_id
+    WHERE kind_id = ?; 
+    `,
+      [currkind]
+    );
+
+    const kindName = await connection.query(
+      `
+    SELECT kind FROM ingredients where id = ?; 
+    `,
+      [currkind]
+    );
+    if (result[0].length === 0) throw "PRODUCT NOT FOUND";
+    if (kindName[0][0] === undefined) throw "KIND NOT FOUND";
+    await connection.commit();
+
+    res.json({ success: true, result: result[0], kind: kindName[0][0].kind });
+  } catch (error) {
+    await connection.rollback();
+    res.json({ success: false, err: error });
+  }
+  connection.release();
+});
+
+router.delete("/del/:prodID", async function (req, res, next) {
+  if (req.session.isLogined) {
+    const delProd = req.params.prodID;
+    const connection = await conn2.getConnection(async (__conn) => __conn);
+    await connection.beginTransaction();
+    try {
+      const checkSameSeller = await connection.query(
+        `
+        SELECT seller_id FROM products WHERE id = ? 
+        `,
+        [delProd]
+      );
+      if (req.session.UID !== checkSameSeller[0][0].seller_id) throw `NOT SAME SELLER`;
+      const result = await connection.query(
+        `
+        DELETE FROM products WHERE id = ?
+      `,
+        [delProd]
+      );
+      console.log(result);
+      await connection.commit();
+      res.json({ success: true, msg: "Delete success." });
+    } catch (error) {
+      console.log(error);
+      await connection.rollback();
+      res.json({ success: false, err: error });
+    }
+    connection.release();
+  } else {
+    res.json({ success: false, NOT_LOGINED: true });
+  }
+});
+
 module.exports = router;
