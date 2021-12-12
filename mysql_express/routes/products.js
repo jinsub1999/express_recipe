@@ -226,10 +226,6 @@ router.post("/order", upload.none(), async function (req, res, next) {
       await connection.commit();
       res.json({
         success: true,
-        test: {
-          prodID: prodID,
-          buyAmount: buyAmount,
-        },
       });
     } catch (err) {
       console.log(err);
@@ -237,10 +233,6 @@ router.post("/order", upload.none(), async function (req, res, next) {
       res.json({
         success: false,
         err: err,
-        test: {
-          prodID: prodID,
-          buyAmount: buyAmount,
-        },
       });
     }
     connection.release();

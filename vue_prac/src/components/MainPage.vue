@@ -5,12 +5,12 @@
     <div class="flex">
       <router-link
         to="/recipe"
-        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-xl"
+        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-lg"
         >레시피 조회</router-link
       >
       <router-link
         to="/products"
-        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-xl"
+        class="bg-blue-300 hover:bg-blue-400 p-3 m-1 w-32 h-20 rounded flex items-center justify-center text-lg"
         >제품 조회</router-link
       >
     </div>
