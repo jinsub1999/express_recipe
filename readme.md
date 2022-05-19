@@ -2,11 +2,20 @@
 
 ## About this project
 
-Sharing recipes and purchasing ingredients website implemented by Vue.js, Node.js, MariaDB. Only need Docker to initialize and run.
+Sharing recipes and purchasing ingredients website implemented by Vue.js, Node.js, MariaDB. 
+
+**Only need Docker to initialize and run.**
+
+### Built With
+
+<img src="./imgs/builtWith.jpeg"/>
 
 ### DB structures.
 
 <img src="./imgs/dbStructure.png"/>
+
+
+
 
 ## Getting started
 
