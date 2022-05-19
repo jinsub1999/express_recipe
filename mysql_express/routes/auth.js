@@ -54,13 +54,13 @@ router.post("/signup", upload.none(), async function (req, res, next) {
   const pwRegEx = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
   if (!idRegEx.test(id)) {
     isErr = true;
-    errs.push("ID must be at least 4.");
-    errs.push("ID only contain alphabets and digits.");
+    errs.push("아이디는 4글자 이상이여야 합니다.");
+    errs.push("아이디는 알파벳과 숫자로만 이루어져야 합니다.");
   }
   if (!pwRegEx.test(pw)) {
     isErr = true;
-    errs.push("Password must be at least 8");
-    errs.push("Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number.");
+    errs.push("암호는 8글자 이상이여야 합니다.");
+    errs.push("암호는 각각 1개 이상의 대문자, 소문자 알파벳, 숫자가 포함되어야 합니다.");
   }
   if (isErr) {
     res.json({
@@ -85,7 +85,6 @@ router.post("/signup", upload.none(), async function (req, res, next) {
         INSERT INTO users(id, pw, signupDate) VALUE(?, ?, ?);`,
           [id, hashed, currdate]
         );
-        console.log(result);
         await connection.commit();
         res.json({
           success: true,
@@ -175,7 +174,6 @@ router.get("/userinfo", async function (req, res, next) {
       );
       const upvoteLog = upvLog[0];
       const buyLog = bLog[0];
-      console.log(upvoteLog, buyLog);
       await connection.commit();
       res.json({
         success: true,

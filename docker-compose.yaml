@@ -1,10 +1,12 @@
 version: "3.8"
 
 services:
-  mysql-db:
+  maria-db:
     image: mariadb:10.7
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
       - ./conf.d:/etc/mysql/conf.d
@@ -14,11 +16,11 @@ services:
 
   vme:
     depends_on:
-      - mysql-db
+      - maria-db
     build: .
     tty: true
     environment:
-      DB_HOST: mysql-db
+      DB_HOST: maria-db
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}

@@ -298,7 +298,6 @@ router.delete("/del/:prodID", async function (req, res, next) {
       `,
         [delProd]
       );
-      console.log(result);
       await connection.commit();
       res.json({ success: true, msg: "Delete success." });
     } catch (error) {

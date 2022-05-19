@@ -30,7 +30,6 @@ export default {
   methods: {
     deleteProd: async function () {
       const currProd = this.$route.params.productID;
-      console.log(currProd);
       const res = await axios({
         url: `http://localhost:3000/api/products/del/${currProd}`,
         method: "DELETE",

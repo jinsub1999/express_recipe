@@ -79,7 +79,10 @@ export default {
         withCredentials: true,
         data: fd,
       });
-      this.ingredList.push({ id: res.data.kindID, kind: this.ingred_input });
+      if (!(this.ingredList.find(elem => elem.kind === this.ingred_input)))
+        this.ingredList.push({id: res.data.kindID, kind: this.ingred_input });
+      else
+        alert("이미 있는 종류입니다!");
       this.ingred_input = "";
     },
   },
@@ -96,7 +99,10 @@ export default {
       alert("로그인이 필요한 서비스입니다.");
       this.$router.push("/login");
     }
-    this.ingredList = res.data.ingreds;
+    if (res.data.ingreds)
+      this.ingredList = res.data.ingreds;
+    else
+      this.ingredList = [];
   },
 };
 </script>
